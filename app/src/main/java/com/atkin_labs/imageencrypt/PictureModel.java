@@ -2,6 +2,7 @@ package com.atkin_labs.imageencrypt;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,13 +26,16 @@ public class PictureModel {
     }
 
     private PictureModel(Context context) {
+        scanDir(context);
+    }
+
+    public void scanDir(Context context) {
         mPictures = new ArrayList<>();
-        mPictures.add("Test");
-        /*File picturesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File picturesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         if (picturesDir != null) {
             String[] files = picturesDir.list();
             Collections.addAll(mPictures, files);
-        }*/
+        }
     }
 
     public List<String> getPictures() {
