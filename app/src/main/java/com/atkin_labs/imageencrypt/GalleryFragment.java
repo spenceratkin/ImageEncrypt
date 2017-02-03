@@ -22,9 +22,12 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Spencer on 1/25/17.
@@ -75,7 +78,7 @@ public class GalleryFragment extends Fragment {
             itemView.setOnClickListener(this);
 
             //mTitleTextView = (TextView)itemView.findViewById(R.id.list_item_crime_title_text_view);
-            mPictureThumbnail = (ImageView)itemView.findViewById(R.id.list_item_picture_thumbnail);
+            //mPictureThumbnail = (ImageView)itemView.findViewById(R.id.list_item_picture_thumbnail);
             mDateTextView = (TextView)itemView.findViewById(R.id.list_item_picture_date_textview);
             //mSolvedCheckBox = (CheckBox)itemView.findViewById(R.id.list_item_crime_solved_check_box);
         }
@@ -106,7 +109,22 @@ public class GalleryFragment extends Fragment {
 
             Bitmap bitmap = BitmapFactory.decodeFile(photoPath, bmOptions);
             mPictureThumbnail.setImageBitmap(bitmap);*/
-            mDateTextView.setText(picture);
+            String[] parts = mPicture.split("_");
+            String dateString = parts[1] + "_" + parts[2];
+            Date pictureDate = null;
+            try {
+                pictureDate = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).parse(dateString);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (pictureDate != null) {
+                String titleText = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(pictureDate);
+                mDateTextView.setText(titleText);
+            }
+            else {
+                mDateTextView.setText(picture);
+            }
         }
 
         @Override

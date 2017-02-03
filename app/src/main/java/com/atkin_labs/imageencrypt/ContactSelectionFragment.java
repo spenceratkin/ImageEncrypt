@@ -1,9 +1,12 @@
 package com.atkin_labs.imageencrypt;
 
-import android.content.Intent;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.media.Image;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.v4.app.Fragment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,41 +16,60 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.File;
 import java.util.List;
 
 /**
- * Created by Spencer on 1/26/17.
+ * Created by Spencer on 2/1/17.
  */
 
-public class ContactsFragment extends Fragment {
+public class ContactSelectionFragment extends DialogFragment {
     private RecyclerView mContactRecyclerView;
     private ContactAdapter mAdapter;
-
-    @Override
+    // this method create view for your Dialog
+    /*@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_contacts, container, false);
+        View view = inflater.inflate(R.layout.fragment_contact_selection, container, false);
 
         mContactRecyclerView = (RecyclerView)view;
-        mContactRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mContactRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mContactRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
+        mContactRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL_LIST));
 
         updateUI();
 
         return view;
     }
 
-    public void notifyNewData() {
-        ContactsModel contactsModel = ContactsModel.get(getActivity());
-        contactsModel.scanDir(getActivity());
-        mAdapter.setContacts(contactsModel.getContacts());
-        mAdapter.notifyDataSetChanged();
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NO_TITLE, android.R.style.Theme_Holo);
+    }*/
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_contact_selection, (ViewGroup)getView());
+        mContactRecyclerView = (RecyclerView)view.findViewById(R.id.contacts_recycler_view_dialog);
+        mContactRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mContactRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
+        updateUI();
+
+        return new AlertDialog.Builder(getActivity())
+                .setTitle("Choose contact to encrypt for:")
+                .setView(view)
+                /*.setPositiveButton(android.R.string.ok,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                // do something
+                            }
+                        }
+                )*/.create();
     }
 
     private void updateUI() {
-        ContactsModel contactsModel = ContactsModel.get(getActivity());
+        ContactsModel contactsModel = ContactsModel.get(getContext());
         List<Contact> contacts = contactsModel.getContacts();
+        Log.d("ImageEncrypt", contacts.toString());
 
         mAdapter = new ContactAdapter(contacts);
         mContactRecyclerView.setAdapter(mAdapter);
@@ -70,8 +92,9 @@ public class ContactsFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            //Intent intent = ImageViewActivity.newIntent(getContext(), mFullPicturePath);//new Intent(getActivity(), MainFragmentActivity.class);
-            //startActivity(intent);
+            ImageViewActivity parent = (ImageViewActivity)getActivity();
+            dismiss();
+            parent.encryptForContact(mContact);
         }
     }
 

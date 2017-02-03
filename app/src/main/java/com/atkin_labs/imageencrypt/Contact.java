@@ -1,10 +1,12 @@
 package com.atkin_labs.imageencrypt;
 
+import java.io.Serializable;
+
 /**
  * Created by Spencer on 1/27/17.
  */
 
-public class Contact {
+public class Contact implements Serializable {
     private String name;
     private byte[] publicKey;
 

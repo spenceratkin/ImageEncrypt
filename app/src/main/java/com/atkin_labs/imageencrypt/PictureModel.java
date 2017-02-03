@@ -35,6 +35,7 @@ public class PictureModel {
         if (picturesDir != null) {
             String[] files = picturesDir.list();
             Collections.addAll(mPictures, files);
+            Collections.reverse(mPictures);
         }
     }
 

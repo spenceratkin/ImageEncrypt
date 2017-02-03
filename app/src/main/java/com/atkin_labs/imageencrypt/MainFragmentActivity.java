@@ -74,6 +74,9 @@ public class MainFragmentActivity extends AppCompatActivity implements Navigatio
                 if (currentFragment instanceof GalleryFragment) {
                     dispatchTakePictureIntent();
                     //((GalleryFragment)currentFragment).update
+                } else if (currentFragment instanceof ContactsFragment) {
+                    Intent intent = new Intent(getApplicationContext(), NewContactActivity.class);
+                    startActivity(intent);
                 }
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         //.setAction("Action", null).show();
@@ -140,13 +143,10 @@ public class MainFragmentActivity extends AppCompatActivity implements Navigatio
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (currentFragment instanceof GalleryFragment) {
                 ((GalleryFragment)currentFragment).notifyNewData();
-                //((GalleryFragment)currentFragment).update
             }
             if (mCurrentPhotoPath != null) {
                 // Encrypt image file with RSA
             }
-            //Bundle extras = data.getExtras();
-            //Bitmap imageBitmap = (Bitmap) extras.get("data");
         }
     }
 

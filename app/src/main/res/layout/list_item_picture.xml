@@ -5,18 +5,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="60dp">
 
-    <ImageView
+    <!--<ImageView
         android:id="@+id/list_item_picture_thumbnail"
         android:layout_width="10dp"
         android:layout_height="10dp"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentStart="true"/>-->
 
     <TextView
         android:id="@+id/list_item_picture_date_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/list_item_picture_thumbnail"
         android:textStyle="bold"
-        android:padding="4dp"
-        tools:text="Picture Date"/>
+        android:padding="16dp"
+        tools:text="Picture Date"
+        android:layout_centerVertical="true"/>
 </RelativeLayout>

@@ -8,7 +8,8 @@
         android:id="@+id/list_item_contact_contact_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:textStyle="bold"
-        android:padding="4dp"
+        android:padding="16dp"
         tools:text="Contact Name"/>
 </RelativeLayout>

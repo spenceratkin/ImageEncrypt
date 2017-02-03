@@ -1,5 +1,6 @@
 package com.atkin_labs.imageencrypt;
 
+import android.content.Context;
 import android.security.KeyPairGeneratorSpec;
 import android.support.v4.util.TimeUtils;
 import android.util.Base64;
@@ -23,7 +24,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -33,14 +36,17 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 
 import javax.crypto.Cipher;
 import javax.crypto.EncryptedPrivateKeyInfo;
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
@@ -53,6 +59,7 @@ import static java.util.GregorianCalendar.BC;
 public class CryptoInterface {
     private final String PRIVATE_KEY_ALIAS = "com.atkin-labs.RSAPrivateKeyAlias";
     private final String KEYSTORE_LOCATION = "com.atkin-labs.keystore_name";
+    private static CryptoInterface sCryptoInterface;
     private KeyStore keyStore = null;
 
     static {
@@ -112,19 +119,66 @@ public class CryptoInterface {
         }
     }
 
-    public String encrypt(String plaintext, PublicKey publicKey) {
-        String cipherText = null;
+    public PublicKey getPublicKey(String privKeyPassword) {
+        if (keyStore == null) {
+            return null;
+        }
+        PublicKey publicKey = null;
         try {
-            final Cipher cipher = Cipher.getInstance("RSA", "SC");
-
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            byte[] cipherBytes = cipher.doFinal(plaintext.getBytes());
-            cipherText = Base64.encodeToString(cipherBytes, Base64.DEFAULT);
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(PRIVATE_KEY_ALIAS, new KeyStore.PasswordProtection(privKeyPassword.toCharArray()));
+            publicKey = privateKeyEntry.getCertificate().getPublicKey();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        Log.d("ImageEncrypt", cipherText);
+        return publicKey;
+    }
+
+    public PublicKey publicKeyFromBytes(byte[] bytes) {
+        PublicKey publicKey = null;
+        try {
+            publicKey = KeyFactory.getInstance("RSA", "SC").generatePublic(new X509EncodedKeySpec(bytes));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return publicKey;
+    }
+
+    public String encrypt(byte[] plaintext, PublicKey publicKey) {
+        String cipherText = null;
+        try {
+            // Generate random AES key to be used only once
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES", "SC");
+            keyGen.init(256);
+            SecretKey randomAES = keyGen.generateKey();
+            final Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "SC");
+            byte[] iv = new byte[16];
+            SecureRandom random = new SecureRandom();
+            random.nextBytes(iv);
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+            aesCipher.init(Cipher.ENCRYPT_MODE, randomAES, ivParameterSpec);
+
+            // Encrypt the plaintext with the random AES key
+            byte[] cipherTextBytes = aesCipher.doFinal(plaintext);
+
+            // Create an RSA cipher with the public key
+            final Cipher rsaCipher = Cipher.getInstance("RSA", "SC");
+            rsaCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+
+            // Encrypt the AES key with the RSA cipher
+            byte[] encryptedKeyBytes = rsaCipher.doFinal(randomAES.getEncoded());
+
+            // Concatenate the encrypted AES key and the encrypted plaintext and base64 them
+            byte[] combinedCipherTextBytes = new byte[encryptedKeyBytes.length + cipherTextBytes.length]; // Concatenated byte arrays
+            System.arraycopy(encryptedKeyBytes, 0, combinedCipherTextBytes, 0, encryptedKeyBytes.length);
+            System.arraycopy(cipherTextBytes, 0, combinedCipherTextBytes, encryptedKeyBytes.length, cipherTextBytes.length);
+
+            cipherText = Base64.encodeToString(combinedCipherTextBytes, Base64.DEFAULT);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
         return cipherText;
     }
 
